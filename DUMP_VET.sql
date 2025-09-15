@@ -580,3 +580,112 @@ UNLOCK TABLES;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2025-09-12 23:42:35
+
+INSERT INTO familia (id_dominio, id_reino, id_filo, id_clase, id_orden, id_familia, familia)
+VALUES (1,1,1,1,1,2,'Felidae');
+INSERT INTO genero (id_dominio, id_reino, id_filo, id_clase, id_orden, id_familia, id_genero, genero)
+VALUES (1,1,1,1,1,2,2,'Felis');
+INSERT INTO especie (id_dominio, id_reino, id_filo, id_clase, id_orden, id_familia, id_genero, id_especie, especie)
+VALUES (1,1,1,1,1,2,2,1,'Felis catus');
+INSERT INTO raza (id_raza, id_dominio, id_reino, id_filo, id_clase, id_orden, id_familia, id_genero, id_especie, raza)
+VALUES (3,1,1,1,1,1,2,2,1,'Gato Naranja');
+INSERT INTO mascota (id_mascota, nombre, id_raza, color, fecha_nac, sexo, castrado, id_propietario)
+VALUES (3, 'Naranja', 3, 'Naranja', '2022-08-15', 'Macho', 'NO', 1);
+--
+INSERT INTO raza (
+    id_raza, id_dominio, id_reino, id_filo, id_clase, id_orden, id_familia, id_genero, id_especie, raza
+) VALUES (
+    4, 1, 1, 1, 1, 1, 1, 1, 1, 'Mestizo'
+);
+INSERT INTO mascota (
+    id_mascota, nombre, id_raza, color, fecha_nac, sexo, castrado, id_propietario
+) VALUES (
+    4, 'beto', 4, 'Negro y blanco', '2021-7-13', 'Macho', 'NO', 2
+);
+
+-- a) Mascota, nombre de la especie, nombre de la raza.
+select m.nombre as Mascota,
+	e.especie as nombre_especie,
+    r.raza as nombre_raza 
+    -- se selecciona la columna de nombre de la tabla mascota, la columna especie de la tabla especie y la 
+from mascota m
+JOIN raza r ON m.id_raza = r.id_raza -- se juntan los ids de mascota y raza, para obtener el id de especies se debe de buscar en las pk combinadas
+JOIN especie e ON r.id_dominio = e.id_dominio
+              AND r.id_reino = e.id_reino
+              AND r.id_filo = e.id_filo
+              AND r.id_clase = e.id_clase
+              AND r.id_orden = e.id_orden
+              AND r.id_familia = e.id_familia
+              AND r.id_genero = e.id_genero
+              AND r.id_especie = e.id_especie;
+
+-- b)
+use veterinaria;
+SELECT e.especie AS Especie, -- se selecciona el campo de especie de la tabla Especie
+       COUNT(m.id_mascota) AS Cantidad_Mascotas -- se cuenta la cant de ids que hay en la tabla mascotas
+FROM mascota m
+JOIN raza r ON m.id_raza = r.id_raza -- se relacionan los ids de mascota con los id de raza
+JOIN especie e ON r.id_dominio = e.id_dominio -- se relaciona los id de raza con todos los pk compuyestos de especie
+              AND r.id_reino = e.id_reino
+              AND r.id_filo = e.id_filo
+              AND r.id_clase = e.id_clase
+              AND r.id_orden = e.id_orden
+              AND r.id_familia = e.id_familia
+              AND r.id_genero = e.id_genero
+              AND r.id_especie = e.id_especie
+GROUP BY e.especie; -- se agrupa por especies
+
+-- c)
+use veterinaria;
+SELECT r.raza AS Raza, -- se selecciona la column raza de la tabla raza 
+       COUNT(m.id_mascota) AS Cantidad_Mascotas -- se cuenta la cant de ids que hay en la tabla mascota
+FROM mascota m 
+JOIN raza r ON m.id_raza = r.id_raza
+GROUP BY r.raza; -- se agrupa por razas para mostrar la cant qu ehay
+-- d)
+SELECT m.nombre AS Mascota, -- se seleciona la columna nombre de la tabla mascotas
+       COUNT(c.id_consulta) AS Cantidad_Visitas -- se cuenta 
+FROM mascota m
+LEFT JOIN consulta c ON m.id_mascota = c.id_mascota -- se cuentan o no los campos que se relacionen entre consultas y mascotas
+GROUP BY m.nombre;
+-- e)
+use veterinaria;
+SELECT DATE(c.fecha) AS Fecha,   
+       m.nombre AS Mascota,       
+       CONCAT(p.nombre, ' ', p.apellido) AS Responsable,  
+       c.motivo AS Atencion_Realizada  
+       -- seleciona la fecha de la tabla consultas, el nombre de la t mascota, propietario nya y el motivo
+FROM consulta c
+JOIN mascota m ON c.id_mascota = m.id_mascota        -- Relacionamos consulta con mascota
+JOIN propietario p ON c.id_propietario = p.id_propietario  -- Relacionamos consulta con propietario
+ORDER BY c.fecha;   -- Ordenamos por fecha de consulta
+
+-- f)
+use veterinaria;
+SELECT m.nombre AS Mascota,  
+       CASE 
+           WHEN m.castrado = 'SI' THEN 'Castrado'     
+           WHEN m.castrado = 'NO' THEN 'No Castrado'  
+           ELSE 'Desconocido'                       
+       END AS Estado_Castracion
+  FROM mascota m;     
+
+use veterinaria;
+select m.nombre AS mascota,
+if (m.id_raza = 4, 'si es mestizo','no es mestizo') AS Mestizo
+from mascota m;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
